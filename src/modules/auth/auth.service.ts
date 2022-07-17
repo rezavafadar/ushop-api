@@ -1,5 +1,4 @@
 import { Injectable, HttpException } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
 
 import { validateOtpVerify } from '../../validation/auth.validation';
 import { IGenerationInfo } from '../../interfaces/auth.interface';
@@ -11,22 +10,11 @@ import { EmailService } from '../../common/email/email.service';
 
 @Injectable()
 export class AuthService {
-  private mailer: nodemailer.Transporter;
-
   constructor(
     private userRepo: UserRepo,
     private otpStrategy: OtpStrategy,
     private emailService: EmailService,
-  ) {
-    this.mailer = nodemailer.createTransport({
-      port: 587,
-      host: 'smtp.gmail.com',
-      auth: {
-        user: 'rezaemsender2@gmail.com',
-        pass: 'pplgxbfivjuzkpgd',
-      },
-    });
-  }
+  ) {}
 
   async generate(generationInfo: IGenerationInfo) {
     await validateOtpVerify(generationInfo);
@@ -51,19 +39,10 @@ export class AuthService {
     const { activationCode } = await this.otpStrategy.generate(generationInfo);
 
     if (generationInfo.method === 'email') {
-      // this.emailProducers.activationMail(verifyInfo.identifier, activationCode);
       this.emailService.sendActivationCode(
         activationCode,
         generationInfo.identifier,
       );
-      // await this.mailer.sendMail({
-      //   from: 'USHOP',
-      //   to: generationInfo.identifier,
-      //   subject: 'UShop: Activation Code',
-      //   text: `You're trying to login into your account! if You aren't, ignore this message please!
-      //   Your activation: ${activationCode}
-      //   `,
-      // });
     } else {
       // need SMS pannel
     }
