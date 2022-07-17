@@ -16,4 +16,15 @@ export class UserRepo {
       [method]: identifier,
     });
   }
+
+  activatedUserById(id: string) {
+    return this.userModel.updateOne(
+      { _id: id },
+      {
+        $set: {
+          active: true,
+        },
+      },
+    );
+  }
 }

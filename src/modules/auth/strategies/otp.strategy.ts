@@ -55,4 +55,20 @@ export class OtpStrategy {
 
     return { activationCode };
   }
+
+  async verify(identifier: string, code: string) {
+    const activationCode: any = JSON.parse(
+      await this.cacheManager.get(identifier),
+    );
+
+    if (!activationCode)
+      throw new HttpException("Activation Code isn't exists!", 400);
+
+    if (activationCode.code !== code)
+      throw new HttpException("Activation Code isn't correct or expired.", 400);
+
+    await this.cacheManager.del(identifier);
+
+    return true;
+  }
 }

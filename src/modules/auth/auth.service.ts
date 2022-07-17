@@ -1,7 +1,10 @@
 import { Injectable, HttpException } from '@nestjs/common';
 
-import { validateOtpVerify } from '../../validation/auth.validation';
-import { IGenerationInfo } from '../../interfaces/auth.interface';
+import {
+  validateOtpGenerate,
+  validateOtpVerify,
+} from '../../validation/auth.validation';
+import { IGenerationInfo, IVerifyInfo } from '../../interfaces/auth.interface';
 import { UserRepo } from '../user/user.repo';
 import { IUser } from '../../interfaces/user.interfaces';
 import { RESEND_TIME_ACTIVATION_CODE } from '../../constants';
@@ -17,7 +20,7 @@ export class AuthService {
   ) {}
 
   async generate(generationInfo: IGenerationInfo) {
-    await validateOtpVerify(generationInfo);
+    await validateOtpGenerate(generationInfo);
 
     const user: IUser = await this.userRepo.findByPhoneOrEmail(
       generationInfo.method,
@@ -35,7 +38,6 @@ export class AuthService {
       });
     }
 
-    // TODO: Otp Strategy
     const { activationCode } = await this.otpStrategy.generate(generationInfo);
 
     if (generationInfo.method === 'email') {
@@ -48,5 +50,26 @@ export class AuthService {
     }
 
     return { resendTime: RESEND_TIME_ACTIVATION_CODE };
+  }
+
+  async verify(verifyInfo: IVerifyInfo) {
+    await validateOtpVerify(verifyInfo);
+
+    const user = await this.userRepo.findByPhoneOrEmail(
+      verifyInfo.method,
+      verifyInfo.identifier,
+    );
+
+    console.log(user);
+
+    if (!user) throw new HttpException("User isn't defined!", 401);
+
+    if (user.blocked) throw new HttpException("You're Blocked!", 403);
+
+    await this.otpStrategy.verify(verifyInfo.identifier, verifyInfo.code);
+
+    await this.userRepo.activatedUserById(user.id);
+
+    return { user };
   }
 }

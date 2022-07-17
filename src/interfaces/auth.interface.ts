@@ -7,3 +7,7 @@ export interface IGenerationInfo {
   identifier: string;
   method: VerifyMethod;
 }
+
+export interface IVerifyInfo extends IGenerationInfo {
+  code: string;
+}
