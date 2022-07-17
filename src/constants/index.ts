@@ -1,0 +1,1 @@
+export const RESEND_TIME_ACTIVATION_CODE = 120;

@@ -1,11 +1,17 @@
-import { Controller, Post, Req, Res } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Response } from 'express';
+
+import { AuthService } from './auth.service';
+import { IGenerationInfo } from '../../interfaces/auth.interface';
 
 @Controller('auth')
 export class AuthController {
-  @Post('/verify')
-  async verify(@Req() req: Request, @Res() res: Response) {
-    console.log(req);
-    res.status(200).json({ message: 'mmd okaye' });
+  constructor(private authService: AuthService) {}
+
+  @Post('/generate')
+  async verify(@Body() generationInfo: IGenerationInfo, @Res() res: Response) {
+    const { resendTime } = await this.authService.generate(generationInfo);
+
+    res.status(200).json({ message: 'Successfuly!', resendTime });
   }
 }
