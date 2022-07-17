@@ -32,7 +32,7 @@ export class OtpStrategy {
 
     if (currentActivationCode) {
       if (currentActivationCode.lastSendTime > new Date().getTime()) {
-        throw new HttpException('Activation code is exists', 400);
+        throw new HttpException('Activation code is exists.', 400);
       }
       await this.cacheManager.del(generationInfo.identifier);
     }
