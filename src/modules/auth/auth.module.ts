@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -7,7 +8,7 @@ import { OtpStrategy } from './strategies/otp.strategy';
 import { EmailModule } from '../../common/email/email.module';
 
 @Module({
-  imports: [UserModule, EmailModule],
+  imports: [UserModule, EmailModule, JwtModule.register({})],
   controllers: [AuthController],
   providers: [AuthService, OtpStrategy],
   exports: [AuthService, OtpStrategy],

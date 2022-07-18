@@ -67,8 +67,8 @@ export class AuthController {
   })
   @Post('/verify')
   async verify(@Body() verifyInfo: IVerifyInfo, @Res() res: Response) {
-    await this.authService.verify(verifyInfo);
+    const { token } = await this.authService.verify(verifyInfo);
 
-    res.status(200).json({ message: 'Successfuly!' });
+    res.status(200).json({ message: 'Successfuly!', token });
   }
 }

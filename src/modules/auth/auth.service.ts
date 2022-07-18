@@ -10,6 +10,7 @@ import { IUser } from '../../interfaces/user.interfaces';
 import { RESEND_TIME_ACTIVATION_CODE } from '../../constants';
 import { OtpStrategy } from './strategies/otp.strategy';
 import { EmailService } from '../../common/email/email.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +18,7 @@ export class AuthService {
     private userRepo: UserRepo,
     private otpStrategy: OtpStrategy,
     private emailService: EmailService,
+    private jwtService: JwtService,
   ) {}
 
   async generate(generationInfo: IGenerationInfo) {
@@ -60,8 +62,6 @@ export class AuthService {
       verifyInfo.identifier,
     );
 
-    console.log(user);
-
     if (!user) throw new HttpException("User isn't defined!", 401);
 
     if (user.blocked) throw new HttpException("You're Blocked!", 403);
@@ -70,6 +70,8 @@ export class AuthService {
 
     await this.userRepo.activatedUserById(user.id);
 
-    return { user };
+    const token = this.jwtService.sign({ id: user._id });
+
+    return { token };
   }
 }

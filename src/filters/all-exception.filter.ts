@@ -23,6 +23,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         exception.getStatus(),
       );
 
+    console.log(exception);
+
     const httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 
     const responseBody = {
