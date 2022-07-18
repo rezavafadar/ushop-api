@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { VerifyMethod } from 'src/interfaces/auth.interface';
 
-import { VerifyMethod } from '../../../interfaces/auth.interface';
-
-export class OtpGenerationDto {
+export class OtpVerifyDto {
   @ApiProperty({
     description: 'User Phone number or Email address',
     example: 'example@gmail.com OR +989369441185',
@@ -15,4 +14,10 @@ export class OtpGenerationDto {
     description: 'Generation Method',
   })
   method: VerifyMethod;
+
+  @ApiProperty({
+    description: 'Activation code',
+    example: '12345',
+  })
+  code: string;
 }

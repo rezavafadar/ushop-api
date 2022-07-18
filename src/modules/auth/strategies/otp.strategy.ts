@@ -1,8 +1,8 @@
 import {
   CACHE_MANAGER,
   Inject,
-  HttpException,
   Injectable,
+  BadRequestException,
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 
@@ -32,7 +32,7 @@ export class OtpStrategy {
 
     if (currentActivationCode) {
       if (currentActivationCode.lastSendTime > new Date().getTime()) {
-        throw new HttpException('Activation code is exists.', 400);
+        throw new BadRequestException('Activation code is exists.');
       }
       await this.cacheManager.del(generationInfo.identifier);
     }
@@ -62,10 +62,12 @@ export class OtpStrategy {
     );
 
     if (!activationCode)
-      throw new HttpException("Activation Code isn't exists!", 400);
+      throw new BadRequestException("Activation Code isn't exists!");
 
     if (activationCode.code !== code)
-      throw new HttpException("Activation Code isn't correct or expired.", 400);
+      throw new BadRequestException(
+        "Activation Code isn't correct or expired.",
+      );
 
     await this.cacheManager.del(identifier);
 

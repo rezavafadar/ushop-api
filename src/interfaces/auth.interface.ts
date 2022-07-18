@@ -11,3 +11,7 @@ export interface IGenerationInfo {
 export interface IVerifyInfo extends IGenerationInfo {
   code: string;
 }
+
+export interface IRefreshTokenInfo {
+  refreshToken: string;
+}

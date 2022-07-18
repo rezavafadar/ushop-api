@@ -1,16 +1,26 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 
 import {
   validateOtpGenerate,
   validateOtpVerify,
+  validateRefreshToken,
 } from '../../validation/auth.validation';
-import { IGenerationInfo, IVerifyInfo } from '../../interfaces/auth.interface';
+import {
+  IGenerationInfo,
+  IRefreshTokenInfo,
+  IVerifyInfo,
+} from '../../interfaces/auth.interface';
 import { UserRepo } from '../user/user.repo';
 import { IUser } from '../../interfaces/user.interfaces';
 import { RESEND_TIME_ACTIVATION_CODE } from '../../constants';
 import { OtpStrategy } from './strategies/otp.strategy';
 import { EmailService } from '../../common/email/email.service';
-import { JwtService } from '@nestjs/jwt';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +28,7 @@ export class AuthService {
     private userRepo: UserRepo,
     private otpStrategy: OtpStrategy,
     private emailService: EmailService,
-    private jwtService: JwtService,
+    private jwtStrategy: JwtStrategy,
   ) {}
 
   async generate(generationInfo: IGenerationInfo) {
@@ -30,7 +40,7 @@ export class AuthService {
     );
 
     if (user && user.blocked) {
-      throw new HttpException("You're Blocked!", 403);
+      throw new ForbiddenException("You're Blocked!");
     }
 
     if (!user) {
@@ -51,7 +61,11 @@ export class AuthService {
       // need SMS pannel
     }
 
-    return { resendTime: RESEND_TIME_ACTIVATION_CODE };
+    return {
+      resendTime: RESEND_TIME_ACTIVATION_CODE,
+      method: generationInfo.method,
+      identifier: generationInfo.identifier,
+    };
   }
 
   async verify(verifyInfo: IVerifyInfo) {
@@ -62,16 +76,56 @@ export class AuthService {
       verifyInfo.identifier,
     );
 
-    if (!user) throw new HttpException("User isn't defined!", 401);
+    if (!user) throw new UnauthorizedException("User isn't defined!");
 
-    if (user.blocked) throw new HttpException("You're Blocked!", 403);
+    if (user.blocked) throw new ForbiddenException("You're Blocked!");
 
     await this.otpStrategy.verify(verifyInfo.identifier, verifyInfo.code);
 
-    await this.userRepo.activatedUserById(user.id);
+    const { accessToken, refreshToken, accessTokenExpire } =
+      this.jwtStrategy.createTokens(user._id);
 
-    const token = this.jwtService.sign({ id: user._id });
+    await this.userRepo.updateUser(
+      { _id: user._id },
+      {
+        active: true,
+        refreshToken,
+        lastLogin: Date.now(),
+        firstLogin: user.firstLogin ? user.firstLogin : Date.now(),
+      },
+    );
 
-    return { token };
+    return { accessToken, refreshToken, accessTokenExpire };
+  }
+
+  async refreshToken(refreshTokenInfo: IRefreshTokenInfo) {
+    await validateRefreshToken(refreshTokenInfo);
+
+    const tokenValidation = this.jwtStrategy.validateRefreshToken(
+      refreshTokenInfo.refreshToken,
+    );
+
+    if (!tokenValidation.valid)
+      throw new BadRequestException('Token is invalid!');
+
+    if (Date.now() >= tokenValidation.verifyResult.exp * 1000) {
+      throw new ForbiddenException('Token expired!');
+    }
+
+    const user = await this.userRepo.findById(
+      tokenValidation.verifyResult.userId,
+    );
+
+    if (!user || !user.active || user.blocked)
+      throw new UnauthorizedException("Nobody isn't define with this token!");
+
+    if (user.refreshToken !== refreshTokenInfo.refreshToken) {
+      throw new BadRequestException('Token is invalid!');
+    }
+    const { accessToken, refreshToken, accessTokenExpire } =
+      this.jwtStrategy.createTokens(user._id);
+    await this.userRepo.updateUser({ _id: user._id }, { refreshToken });
+
+    return { accessToken, refreshToken, accessTokenExpire };
   }
 }

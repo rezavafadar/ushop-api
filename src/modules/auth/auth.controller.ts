@@ -6,11 +6,18 @@ import {
   ApiForbiddenResponse,
   ApiResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
-import { IGenerationInfo, IVerifyInfo } from '../../interfaces/auth.interface';
-import { OtpGenerationDto, OtpVerifyDto } from './dtos/generation.dto';
+import {
+  IGenerationInfo,
+  IRefreshTokenInfo,
+  IVerifyInfo,
+} from '../../interfaces/auth.interface';
+import { OtpGenerationDto } from './dtos/generation.dto';
+import { OtpVerifyDto } from './dtos/verifing.dto';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
 
 @ApiTags('AUTH')
 @Controller('auth')
@@ -35,9 +42,13 @@ export class AuthController {
     @Body() generationInfo: IGenerationInfo,
     @Res() res: Response,
   ) {
-    const { resendTime } = await this.authService.generate(generationInfo);
+    const { resendTime, identifier, method } = await this.authService.generate(
+      generationInfo,
+    );
 
-    res.status(200).json({ message: 'Successfuly!', resendTime });
+    res
+      .status(200)
+      .json({ message: 'Successfuly!', resendTime, identifier, method });
   }
 
   @ApiBody({ type: OtpVerifyDto })
@@ -67,8 +78,45 @@ export class AuthController {
   })
   @Post('/verify')
   async verify(@Body() verifyInfo: IVerifyInfo, @Res() res: Response) {
-    const { token } = await this.authService.verify(verifyInfo);
+    const { accessToken, refreshToken, accessTokenExpire } =
+      await this.authService.verify(verifyInfo);
 
-    res.status(200).json({ message: 'Successfuly!', token });
+    res.status(200).json({
+      message: 'Successfuly!',
+      accessToken,
+      refreshToken,
+      accessTokenExpire,
+    });
+  }
+
+  @ApiBody({
+    type: RefreshTokenDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: "Nobody isn't define with this token!",
+    status: 401,
+  })
+  @ApiBadRequestResponse({
+    description: 'Token is invalid!',
+    status: 400,
+  })
+  @ApiForbiddenResponse({
+    status: 403,
+    description: 'Refresh Token expired.',
+  })
+  @Post('refresh-token')
+  async refreshToken(
+    @Body() refreshTokenInfo: IRefreshTokenInfo,
+    @Res() res: Response,
+  ) {
+    const { accessToken, accessTokenExpire, refreshToken } =
+      await this.authService.refreshToken(refreshTokenInfo);
+
+    res.status(200).json({
+      message: 'Successfully!',
+      accessToken,
+      refreshToken,
+      accessTokenExpire,
+    });
   }
 }

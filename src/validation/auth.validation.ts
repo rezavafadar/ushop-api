@@ -1,7 +1,11 @@
 import * as joi from 'joi';
 
 import { validator } from './validator';
-import { IGenerationInfo, IVerifyInfo } from '../interfaces/auth.interface';
+import {
+  IGenerationInfo,
+  IRefreshTokenInfo,
+  IVerifyInfo,
+} from '../interfaces/auth.interface';
 import { activationCodeRange } from '../constants';
 
 const method = joi.valid('email', 'phone').required();
@@ -18,6 +22,10 @@ const code = joi
   .min(activationCodeRange)
   .max(activationCodeRange)
   .required();
+const refreshToken = joi
+  .string()
+  .pattern(/^[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*$/)
+  .required();
 
 export const generateValidationSchema = joi.object({
   method,
@@ -30,7 +38,13 @@ export const verifyValidationSchema = joi.object({
   code,
 });
 
+export const refreshValidationSchema = joi.object({
+  refreshToken,
+});
+
 export const validateOtpGenerate = (data: IGenerationInfo) =>
   validator(generateValidationSchema, data);
 export const validateOtpVerify = (data: IVerifyInfo) =>
   validator(verifyValidationSchema, data);
+export const validateRefreshToken = (data: IRefreshTokenInfo) =>
+  validator(refreshValidationSchema, data);

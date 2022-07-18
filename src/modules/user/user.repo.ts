@@ -17,14 +17,13 @@ export class UserRepo {
     });
   }
 
-  activatedUserById(id: string) {
-    return this.userModel.updateOne(
-      { _id: id },
-      {
-        $set: {
-          active: true,
-        },
-      },
-    );
+  findById(id: string) {
+    return this.userModel.findById(id);
+  }
+
+  updateUser(filter: Partial<IUser>, data: Partial<IUser>) {
+    return this.userModel.updateOne(filter, {
+      $set: data,
+    });
   }
 }
