@@ -16,7 +16,17 @@ import { IUpdateUserInfo } from 'src/interfaces/user.interfaces';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { getServerUrl } from '../../utils/get-url';
 import { ConfigService } from '@nestjs/config';
+import { memoryStorage } from 'multer';
+import {
+  ApiBody,
+  ApiResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { UserInfoDto } from './dtos/user-info.dto';
+import { UserProfileDto } from './dtos/user-profile.dto';
 
+@ApiTags('USER')
 @UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
@@ -25,13 +35,13 @@ export class UserController {
     private configService: ConfigService,
   ) {}
 
-  // @Post('create')
-  // async createUser() {
-  //   await this.userService.createUser();
-  //   return 'kh';
-  // }
-
-  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully',
+  })
+  @ApiUnauthorizedResponse({
+    description: "When User isn't defined",
+  })
   @Get('/me')
   async getMe(@Req() req: Request, @Res() res: Response) {
     const user: any = req.user;
@@ -40,8 +50,14 @@ export class UserController {
     res.status(200).json({ message: 'Successfully!', data: userInfo });
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('/info')
+  @ApiBody({
+    type: UserInfoDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully',
+  })
   async updateMe(@Req() req: Request, @Res() res: Response) {
     const user: any = req.user;
     const body: IUpdateUserInfo = req.body;
@@ -51,28 +67,32 @@ export class UserController {
     res.status(200).json({ message: 'Successfully!' });
   }
 
+  @Post('/photo')
   @UseInterceptors(
     FileInterceptor('photo', {
-      dest: 'uploads/user/photo',
+      storage: memoryStorage(),
     }),
   )
-  @Post('/photo')
+  @ApiBody({
+    type: UserProfileDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Sucessfully!',
+  })
   async updateProfilePhoto(
-    @UploadedFile() profilePhoto: Express.Multer.File,
+    @UploadedFile()
+    profilePhoto: Express.Multer.File,
     @Req() req: Request,
     @Res() res: Response,
   ) {
     const user: any = req.user;
-    const filename = await this.userService.updateUserPhoto(
+    const { filePath } = await this.userService.updateUserPhoto(
       user.userId,
       profilePhoto,
     );
 
-    const url = getServerUrl(
-      req,
-      this.configService.get('USER_PHOTO_PATH'),
-      filename,
-    );
+    const url = getServerUrl(req, filePath);
 
     res.status(200).json({ message: 'Successfully!', url });
   }

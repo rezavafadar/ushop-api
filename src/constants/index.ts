@@ -12,3 +12,5 @@ export const NOT_ALLOW_USER_DOCUMENT_KEYS: Array<keyof IUser> = [
   'createdAt',
   'updatedAt',
 ];
+
+export const USER_PHOTO_FORMMAT = 'jpeg';
