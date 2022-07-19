@@ -3,6 +3,8 @@ import { Document, Types } from 'mongoose';
 export interface IUser {
   readonly _id: Types.ObjectId;
   readonly fullname: string;
+  readonly bio: string;
+  readonly photo: string;
   readonly phone: string;
   readonly email: string;
   readonly address: string;
@@ -14,6 +16,11 @@ export interface IUser {
   readonly blocked: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
+}
+
+export interface IUpdateUserInfo {
+  readonly fullname?: string;
+  readonly bio?: string;
 }
 
 export type IUserDoc = IUser & Document;

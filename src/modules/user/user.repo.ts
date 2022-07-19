@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { IUser } from '../../interfaces/user.interfaces';
 import { VerifyMethod } from '../../interfaces/auth.interface';
@@ -18,8 +18,8 @@ export class UserRepo {
     });
   }
 
-  findById(id: string) {
-    return this.userModel.findById(id);
+  findById(id: Types.ObjectId) {
+    return this.userModel.findById(id).lean();
   }
 
   updateUser(filter: Partial<IUser>, data: Partial<IUser>) {

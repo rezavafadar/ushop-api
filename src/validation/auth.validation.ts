@@ -27,20 +27,26 @@ const refreshToken = joi
   .pattern(/^[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*$/)
   .required();
 
-export const generateValidationSchema = joi.object({
-  method,
-  identifier,
-});
+export const generateValidationSchema = joi
+  .object({
+    method,
+    identifier,
+  })
+  .options({ allowUnknown: false });
 
-export const verifyValidationSchema = joi.object({
-  identifier,
-  method,
-  code,
-});
+export const verifyValidationSchema = joi
+  .object({
+    identifier,
+    method,
+    code,
+  })
+  .options({ allowUnknown: false });
 
-export const refreshValidationSchema = joi.object({
-  refreshToken,
-});
+export const refreshValidationSchema = joi
+  .object({
+    refreshToken,
+  })
+  .options({ allowUnknown: false });
 
 export const validateOtpGenerate = (data: IGenerationInfo) =>
   validator(generateValidationSchema, data);
