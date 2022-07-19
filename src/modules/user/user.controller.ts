@@ -1,4 +1,4 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 
 import { UserService } from './user.service';
 
@@ -6,9 +6,9 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Post('create')
-  async createUser() {
-    await this.userService.createUser();
-    return 'kh';
-  }
+  // @Post('create')
+  // async createUser() {
+  //   await this.userService.createUser();
+  //   return 'kh';
+  // }
 }

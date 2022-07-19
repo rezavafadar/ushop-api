@@ -1,17 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Injectable } from '@nestjs/common';
 
-import type { IUser } from '../../interfaces/user.interfaces';
+import { UserRepo } from './user.repo';
 
 @Injectable()
 export class UserService {
-  constructor(@Inject('USER_MODEL') private userModel: Model<IUser>) {}
+  constructor(private userRepo: UserRepo) {}
 
-  async createUser() {
-    await this.userModel.create({
-      fullname: 'mmd',
-    });
+  // async createUser() {
+  //   await this.userModel.create({
+  //     fullname: 'mmd',
+  //   });
 
-    return 'successfully';
-  }
+  //   return 'successfully';
+  // }
 }

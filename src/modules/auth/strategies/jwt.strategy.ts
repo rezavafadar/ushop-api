@@ -1,14 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { PassportStrategy } from '@nestjs/passport';
 import { Types } from 'mongoose';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 
 @Injectable()
-export class JwtStrategy {
+export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) {}
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: configService.get('ACC_TOKEN_SECRET'),
+    });
+  }
+
+  validate(payload: any) {
+    return { userId: payload.userId };
+  }
 
   createTokens(userId: Types.ObjectId) {
     const accessToken = this.jwtService.sign(
