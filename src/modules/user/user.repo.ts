@@ -3,9 +3,10 @@ import { Model } from 'mongoose';
 
 import { IUser } from '../../interfaces/user.interfaces';
 import { VerifyMethod } from '../../interfaces/auth.interface';
+import { USER_MODEL_TOKEN } from 'src/constants';
 
 export class UserRepo {
-  constructor(@Inject('USER_MODEL') private userModel: Model<IUser>) {}
+  constructor(@Inject(USER_MODEL_TOKEN) private userModel: Model<IUser>) {}
 
   create(data: Partial<IUser>) {
     return this.userModel.create(data);
