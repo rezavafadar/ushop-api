@@ -106,21 +106,23 @@ export class AuthService {
     );
 
     if (!tokenValidation.valid)
-      throw new BadRequestException('Token is invalid!');
+      throw new BadRequestException('Token is invalid or expired.');
 
     if (Date.now() >= tokenValidation.verifyResult.exp * 1000) {
-      throw new ForbiddenException('Token expired!');
+      throw new BadRequestException('Token is invalid or expired.');
     }
 
     const user = await this.userRepo.findById(
       tokenValidation.verifyResult.userId,
     );
 
-    if (!user || !user.active || user.blocked)
+    if (!user || !user.active)
       throw new UnauthorizedException("Nobody isn't define with this token!");
 
+    if (user.blocked) throw new ForbiddenException('User is blocked!');
+
     if (user.refreshToken !== refreshTokenInfo.refreshToken) {
-      throw new BadRequestException('Token is invalid!');
+      throw new BadRequestException('Token is invalid or expired.');
     }
     const { accessToken, refreshToken, accessTokenExpire } =
       this.jwtStrategy.createTokens(user._id);

@@ -9,20 +9,21 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-
-import { UserService } from './user.service';
-import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
-import { IUpdateUserInfo } from 'src/interfaces/user.interfaces';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { getServerUrl } from '../../utils/get-url';
-import { ConfigService } from '@nestjs/config';
-import { memoryStorage } from 'multer';
 import {
   ApiBody,
   ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
+import { memoryStorage } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
+
+import { UserService } from './user.service';
+import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
+import { IUpdateUserInfo } from 'src/interfaces/user.interfaces';
+import { getServerUrl } from '../../utils/get-url';
+
 import { UserInfoDto } from './dtos/user-info.dto';
 import { UserProfileDto } from './dtos/user-profile.dto';
 

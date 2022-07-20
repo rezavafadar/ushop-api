@@ -97,12 +97,12 @@ export class AuthController {
     status: 401,
   })
   @ApiBadRequestResponse({
-    description: 'Token is invalid!',
+    description: 'Token is invalid or expired.',
     status: 400,
   })
   @ApiForbiddenResponse({
     status: 403,
-    description: 'Refresh Token expired.',
+    description: 'User Blocked.',
   })
   @Post('refresh-token')
   async refreshToken(
