@@ -1,9 +1,10 @@
-import { Inject } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 
 import { IUser } from '../../interfaces/user.interfaces';
 import { VerifyMethod } from '../../interfaces/auth.interface';
 import { USER_MODEL_TOKEN } from 'src/constants';
+import { catchify } from 'src/utils/catchify';
 
 export class UserRepo {
   constructor(@Inject(USER_MODEL_TOKEN) private userModel: Model<IUser>) {}
@@ -12,19 +13,43 @@ export class UserRepo {
     return this.userModel.create(data);
   }
 
-  findByPhoneOrEmail(method: VerifyMethod, identifier: string) {
-    return this.userModel.findOne({
-      [method]: identifier,
-    });
+  async findByPhoneOrEmail(method: VerifyMethod, identifier: string) {
+    const [user, error] = await catchify<IUser, any>(async () =>
+      this.userModel.findOne({
+        [method]: identifier,
+      }),
+    );
+
+    if (error) {
+      throw new BadRequestException('There is a problem, try again later.');
+    }
+
+    return user;
   }
 
-  findById(id: Types.ObjectId) {
-    return this.userModel.findById(id).lean();
+  async findById(id: Types.ObjectId) {
+    const [user, error] = await catchify<IUser, any>(async () =>
+      this.userModel.findById(id).lean(),
+    );
+    if (error) {
+      throw new BadRequestException('There is a problem, try again later.');
+    }
+
+    return user;
   }
 
-  updateUser(filter: Partial<IUser>, data: Partial<IUser>) {
-    return this.userModel.updateOne(filter, {
-      $set: data,
-    });
+  async updateUser(filter: Partial<IUser>, data: Partial<IUser>) {
+    const [updateInfo, error] = await catchify(async () =>
+      this.userModel.updateOne(filter, {
+        $set: data,
+      }),
+    );
+
+    if (error) {
+      throw new BadRequestException(
+        'There is a problem, cannot update user info. try again later,please.',
+      );
+    }
+    return updateInfo;
   }
 }

@@ -16,7 +16,6 @@ import {
   IVerifyInfo,
 } from '../../interfaces/auth.interface';
 import { UserRepo } from '../user/user.repo';
-import { IUser } from '../../interfaces/user.interfaces';
 import { RESEND_TIME_ACTIVATION_CODE } from '../../constants';
 import { OtpStrategy } from './strategies/otp.strategy';
 import { EmailService } from '../../common/email/email.service';
@@ -34,7 +33,7 @@ export class AuthService {
   async generate(generationInfo: IGenerationInfo) {
     await validateOtpGenerate(generationInfo);
 
-    const user: IUser = await this.userRepo.findByPhoneOrEmail(
+    const user = await this.userRepo.findByPhoneOrEmail(
       generationInfo.method,
       generationInfo.identifier,
     );
