@@ -1,5 +1,7 @@
 import { Document, Types } from 'mongoose';
 
+import { RoleEnum } from '../enums/role.enum';
+
 export interface IUser {
   readonly _id: Types.ObjectId;
   readonly fullname: string;
@@ -10,6 +12,7 @@ export interface IUser {
   readonly address: string;
   readonly password: string;
   readonly active: boolean;
+  readonly role: RoleEnum;
   readonly firstLogin: number;
   readonly lastLogin: number;
   readonly refreshToken: string;

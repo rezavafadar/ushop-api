@@ -15,7 +15,6 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { ConfigService } from '@nestjs/config';
 import { memoryStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -31,10 +30,7 @@ import { UserProfileDto } from './dtos/user-profile.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
-  constructor(
-    private userService: UserService,
-    private configService: ConfigService,
-  ) {}
+  constructor(private userService: UserService) {}
 
   @ApiResponse({
     status: 200,

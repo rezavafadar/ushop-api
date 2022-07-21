@@ -9,8 +9,18 @@ import { catchify } from 'src/utils/catchify';
 export class UserRepo {
   constructor(@Inject(USER_MODEL_TOKEN) private userModel: Model<IUser>) {}
 
-  create(data: Partial<IUser>) {
-    return this.userModel.create(data);
+  async create(data: Partial<IUser>) {
+    const [user, error] = await catchify<IUser, any>(async () =>
+      this.userModel.create(data),
+    );
+
+    if (error) {
+      throw new BadRequestException(
+        'There is a problem,cannot create user, try again later.',
+      );
+    }
+
+    return user;
   }
 
   async findByPhoneOrEmail(method: VerifyMethod, identifier: string) {

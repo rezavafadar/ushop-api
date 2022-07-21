@@ -20,6 +20,7 @@ import { RESEND_TIME_ACTIVATION_CODE } from '../../constants';
 import { OtpStrategy } from './strategies/otp.strategy';
 import { EmailService } from '../../common/email/email.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { RoleEnum } from 'src/enums/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -42,14 +43,15 @@ export class AuthService {
       throw new ForbiddenException("You're Blocked!");
     }
 
+    const { activationCode } = await this.otpStrategy.generate(generationInfo);
+
     if (!user) {
       await this.userRepo.create({
         [generationInfo.method]: generationInfo.identifier,
         active: false,
+        role: RoleEnum.User,
       });
     }
-
-    const { activationCode } = await this.otpStrategy.generate(generationInfo);
 
     if (generationInfo.method === 'email') {
       this.emailService.sendActivationCode(
@@ -82,7 +84,7 @@ export class AuthService {
     await this.otpStrategy.verify(verifyInfo.identifier, verifyInfo.code);
 
     const { accessToken, refreshToken, accessTokenExpire } =
-      this.jwtStrategy.createTokens(user._id);
+      this.jwtStrategy.createTokens(user._id, user.role);
 
     await this.userRepo.updateUser(
       { _id: user._id },
@@ -124,7 +126,8 @@ export class AuthService {
       throw new BadRequestException('Token is invalid or expired.');
     }
     const { accessToken, refreshToken, accessTokenExpire } =
-      this.jwtStrategy.createTokens(user._id);
+      this.jwtStrategy.createTokens(user._id, user.role);
+
     await this.userRepo.updateUser({ _id: user._id }, { refreshToken });
 
     return { accessToken, refreshToken, accessTokenExpire };

@@ -4,6 +4,8 @@ import { JwtService } from '@nestjs/jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Types } from 'mongoose';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { IJwtTokenPayload } from 'src/interfaces/jwt-tokens.interfaces';
+import { RoleEnum } from 'src/enums/role.enum';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -18,25 +20,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: any) {
-    return { userId: payload.userId };
+  validate(payload: IJwtTokenPayload): IJwtTokenPayload {
+    return payload;
   }
 
-  createTokens(userId: Types.ObjectId) {
-    const accessToken = this.jwtService.sign(
-      { userId },
-      {
-        secret: this.configService.get('ACC_TOKEN_SECRET'),
-        expiresIn: this.configService.get('ACC_TOKEN_EXPIRE'),
-      },
-    );
-    const refreshToken = this.jwtService.sign(
-      { userId },
-      {
-        secret: this.configService.get('REF_TOKEN_SECRET'),
-        expiresIn: this.configService.get('REF_TOKEN_EXPIRE'),
-      },
-    );
+  createTokens(userId: Types.ObjectId, userRole: RoleEnum) {
+    const tokenPayload: IJwtTokenPayload = { role: userRole, userId };
+
+    const accessToken = this.jwtService.sign(tokenPayload, {
+      secret: this.configService.get('ACC_TOKEN_SECRET'),
+      expiresIn: this.configService.get('ACC_TOKEN_EXPIRE'),
+    });
+    const refreshToken = this.jwtService.sign(tokenPayload, {
+      secret: this.configService.get('REF_TOKEN_SECRET'),
+      expiresIn: this.configService.get('REF_TOKEN_EXPIRE'),
+    });
 
     return {
       refreshToken,
