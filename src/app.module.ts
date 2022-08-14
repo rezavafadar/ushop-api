@@ -9,6 +9,7 @@ import { AuthService } from './modules/auth/auth.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { EmailModule } from './common/email/email.module';
+import { ProductModule } from './modules/product/product.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { EmailModule } from './common/email/email.module';
       }),
     }),
     EmailModule,
+    ProductModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

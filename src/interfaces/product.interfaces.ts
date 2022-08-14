@@ -1,5 +1,4 @@
 import { IBrand } from './brands.interfaces';
-import { ICategory } from './category.interfaces';
 
 export interface IAttribute {
   name: string;
@@ -18,15 +17,19 @@ export interface IProduct {
   subtitle: string;
   introduction: string;
   expertcheckDescription?: string;
-  specification: string;
+  specification: Array<IAttribute>;
   // viewpoints: any;
   // questions: any;
   active: boolean;
-  available: boolean;
+  inventoryAmount: number;
   images: Array<string>;
   links: Array<string>;
   categoriesIds: string[];
   attributes: Array<IAttribute>;
   brandsIds: Array<IBrand>;
   price: number;
+}
+
+export interface IProductRequestBody {
+  product: string;
 }

@@ -6,6 +6,13 @@ import * as path from 'path';
 
 @Injectable()
 export class UploadService {
+  private async checkDirectory(directory: string) {
+    const isDirectoryExists = fs.existsSync(directory);
+    if (!isDirectoryExists) {
+      fs.mkdirSync(directory, { recursive: true });
+    }
+  }
+
   async uploadFileWithBuffer(
     file: Buffer,
     format: keyof sharp.FormatEnum | sharp.AvailableFormatInfo,
@@ -13,15 +20,17 @@ export class UploadService {
     directory: string,
     filename: string,
   ) {
-    const isDirectoryExists = fs.existsSync(directory);
-    if (!isDirectoryExists) {
-      fs.mkdirSync(directory, { recursive: true });
-    }
+    this.checkDirectory(directory);
 
     const uploadPath = path.join(directory, filename);
 
     await sharp(file).toFormat(format, { quality }).toFile(uploadPath);
+
     return { filePath: uploadPath };
+  }
+
+  async uploadFilesWithBuffer() {
+    return Promise.all();
   }
 
   async deleteFile(directory: string, filename: string) {
